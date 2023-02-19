@@ -13,7 +13,7 @@
 
 void event_display() 
 {
-  // Logging
+  // Logger
   auto fLogger = FairLogger::GetLogger();
   fLogger->SetLogVerbosityLevel("low");
   fLogger->SetLogScreenLevel("info");

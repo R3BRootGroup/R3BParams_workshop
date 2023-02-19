@@ -16,70 +16,71 @@
 #include <TSystem.h>
 #include <memory>
 
-void runsim_music(int nbevents = 100)
+void runsim_music(int nbevents = 100) 
 {
-    // Timer
-    TStopwatch timer;
-    timer.Start();
+  // Timer
+  TStopwatch timer;
+  timer.Start();
 
-    // Logger
-    auto fLogger = FairLogger::GetLogger();
-    fLogger->SetLogVerbosityLevel("low");
-    fLogger->SetLogScreenLevel("info");
-    fLogger->SetColoredLog(true);
+  // Logger
+  auto fLogger = FairLogger::GetLogger();
+  fLogger->SetLogVerbosityLevel("low");
+  fLogger->SetLogScreenLevel("info");
+  fLogger->SetColoredLog(true);
 
-    // Output files
-    const TString simufile = "music.sim.root";
-    const TString parafile = "music.par.root";    
-    
-    // Store tracks for visualization
-    Bool_t fVis = true;
+  // Output files
+  const TString simufile = "music.sim.root";
+  const TString parafile = "music.par.root";
 
-    // System paths
-    const TString workDirectory = getenv("VMCWORKDIR");
-    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
+  // Store tracks for visualization
+  Bool_t fVis = true;
 
-    // Basic simulation setup
-    auto run = new FairRunSim();
-    run->SetName("TGeant4");
-    auto config = new FairGenericVMCConfig();
-    run->SetSimulationConfig(config);
-    run->SetStoreTraj(fVis);
-    run->SetMaterials("media_r3b.geo");
-    run->SetSink(new FairRootFileSink(simufile));
+  // System paths
+  const TString workDirectory = getenv("VMCWORKDIR");
+  gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+  gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 
-    // Primary particle generator
-    auto ionGen = new FairIonGenerator(82, 208, 82, 1, 0., 0., 1.09, 0., 0., 0.);
-    auto primGen = new FairPrimaryGenerator();
-    primGen->AddGenerator(ionGen);
-    run->SetGenerator(primGen);
+  // Basic simulation setup
+  auto run = new FairRunSim();
+  run->SetName("TGeant4");
+  auto config = new FairGenericVMCConfig();
+  run->SetSimulationConfig(config);
+  run->SetStoreTraj(fVis);
+  run->SetMaterials("media_r3b.geo");
+  run->SetSink(new FairRootFileSink(simufile));
 
-    // Geometry: Cave
-    auto cave = new R3BCave("CAVE");
-    cave->SetGeometryFileName("r3b_cave.geo");
-    run->AddModule(cave);
-    
-    // Geometry: Music
-    run->AddModule(new R3BMusic("music_v2023.2.geo.root", { 0., 0., 60. }));
+  // Primary particle generator
+  auto ionGen = new FairIonGenerator(82, 208, 82, 1, 0., 0., 1.09, 0., 0., 0.);
+  auto primGen = new FairPrimaryGenerator();
+  primGen->AddGenerator(ionGen);
+  run->SetGenerator(primGen);
 
-    // Init tasks
-    run->Init();
-    
-    // Connect runtime parameter file
-    auto parFileIO = new FairParRootFileIo(true);
-    parFileIO->open(parafile);
-    auto rtdb = run->GetRuntimeDb();
-    rtdb->setOutput(parFileIO);
+  // Geometry: Cave
+  auto cave = new R3BCave("CAVE");
+  cave->SetGeometryFileName("r3b_cave.geo");
+  run->AddModule(cave);
 
-    // Run the simulation
-    run->Run(nbevents);
-    
-    // Save parameters
-    rtdb->saveOutput();
+  // Geometry: Music
+  run->AddModule(new R3BMusic("music_v2023.2.geo.root", {0., 0., 60.}));
 
-    // Report
-    timer.Stop();
-    std::cout << "Real time: " << timer.RealTime() << " s, CPU time: " << timer.CpuTime() << " s" << std::endl;
-    std::cout << "Macro finished successfully." << std::endl;
+  // Init tasks
+  run->Init();
+
+  // Connect runtime parameter file
+  auto parFileIO = new FairParRootFileIo(true);
+  parFileIO->open(parafile);
+  auto rtdb = run->GetRuntimeDb();
+  rtdb->setOutput(parFileIO);
+
+  // Run the simulation
+  run->Run(nbevents);
+
+  // Save parameters
+  rtdb->saveOutput();
+
+  // Report
+  timer.Stop();
+  std::cout << "Real time: " << timer.RealTime()
+            << " s, CPU time: " << timer.CpuTime() << " s" << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
 }
