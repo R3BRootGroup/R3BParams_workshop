@@ -35,6 +35,13 @@ void get_crystal_info(Int_t crystal){
     Float_t offset,slope;
 
 
+    if(!califaMapPar->GetInUse(crystal)){
+
+     cout<<"Crystal "<<crystal<<" was not installed in this experiment!!"<<endl;
+     return;
+
+    }
+
     TArrayF * cry_cal_params;
 
     half          = califaMapPar->GetHalf( crystal);
