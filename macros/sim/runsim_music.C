@@ -43,7 +43,7 @@ void runsim_music(int nbevents = 100)
   // Basic simulation setup
   auto run = new FairRunSim();
   run->SetName("TGeant4");
-  auto config = new FairGenericVMCConfig();
+  auto *config = new FairGenericVMCConfig();
   run->SetSimulationConfig(config);
   run->SetStoreTraj(fVis);
   run->SetMaterials("media_r3b.geo");

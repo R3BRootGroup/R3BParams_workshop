@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <iostream>
 
-void create_target_geo(std::string geoTag = "v2023.2") {
+void create_target_geo(TString geoTag = "v2023.2") {
   // --------------------------------------------------------------------------
   //
   // Execute macro:  root -l
