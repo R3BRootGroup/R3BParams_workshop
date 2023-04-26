@@ -9,8 +9,8 @@ For the software-related user support you can post a new topic on our [forum](ht
 # Download
 
 ~~~bash
-git clone https://github.com/R3BRootGroup/R3BParams.git
-cd R3BParams
+git clone https://github.com/R3BRootGroup/R3BParams_workshop.git
+cd R3BParams_workshop
 git checkout dev
 ~~~
 
@@ -19,15 +19,15 @@ git checkout dev
 First, fork the main repository of parameters from the GitHub account and then download it as follows
 
 ~~~bash
-git clone https://github.com/user_name/R3BParams.git
-cd R3BParams
+git clone https://github.com/user_name/R3BParams_workshop.git
+cd R3BParams_workshop
 git checkout dev
 ~~~
 
 Now when your origin points to your fork. You need to add the main repo to your remotes as well. You should have "origin --> you fork" and "mainrepo --> the main repo".
 
 ~~~bash
-git remote add mainrepo git@github.com:R3BRootGroup/R3BParams_template.git
+git remote add mainrepo git@github.com:R3BRootGroup/R3BParams_workshop.git
 git fetch mainrepo
 ~~~
 

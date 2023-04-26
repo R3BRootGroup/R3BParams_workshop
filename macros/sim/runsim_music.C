@@ -43,8 +43,10 @@ void runsim_music(int nbevents = 100)
   // Basic simulation setup
   auto run = new FairRunSim();
   run->SetName("TGeant4");
-  auto *config = new FairGenericVMCConfig();
-  run->SetSimulationConfig(config);
+  // auto *config = new FairGenericVMCConfig(); // for jun19
+  // run->SetSimulationConfig(config); // for jun19
+  auto config = std::make_unique<FairGenericVMCConfig>(); // for apr22 and beyond
+  run->SetSimulationConfig(std::move(config)); // for apr22 and beyond
   run->SetStoreTraj(fVis);
   run->SetMaterials("media_r3b.geo");
   run->SetSink(new FairRootFileSink(simufile));
