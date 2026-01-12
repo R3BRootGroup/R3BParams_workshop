@@ -1,5 +1,8 @@
-macros/exp/unpack/*.root
-macros/sim/*.root
-core*
+*.root
+*core*
+*.o
 *.lmd
 input
+*allParams_*
+*all_*
+*.vscode
