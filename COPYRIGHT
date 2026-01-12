@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: R3BParams_workshop
+Upstream-Contact: Jose Luis Rodriguez-Sanchez <j.l.rodriguez.sanchez@udc.es>
+Source: https://github.com/R3BRootGroup/R3BParams_template
+
+Files: *
+Copyright: 2021-2026  [see AUTHORS file]
+License: GPL-3.0      [see LICENSE file]
