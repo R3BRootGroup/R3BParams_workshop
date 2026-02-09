@@ -1,6 +1,6 @@
 /******************************************************************************
- *   Copyright (C) 2023 GSI Helmholtzzentrum für Schwerionenforschung GmbH    *
- *   Copyright (C) 2023 Members of R3B Collaboration                          *
+ *   Copyright (C) 2026 GSI Helmholtzzentrum für Schwerionenforschung GmbH    *
+ *   Copyright (C) 2026 Members of R3B Collaboration                          *
  *                                                                            *
  *             This software is distributed under the terms of the            *
  *                 GNU General Public Licence (GPL) version 3,                *
@@ -16,16 +16,21 @@
 #include <TSystem.h>
 #include <memory>
 
-void runsim_music(int nbevents = 100) {
+void runsim_califa(const int nbevents = 100) {
   // Timer
   TStopwatch timer;
   timer.Start();
 
-  // Logger
-  auto fLogger = FairLogger::GetLogger();
-  fLogger->SetLogVerbosityLevel("low");
-  fLogger->SetLogScreenLevel("info");
-  fLogger->SetColoredLog(true);
+  // Logging
+  auto logger = FairLogger::GetLogger();
+  logger->SetLogVerbosityLevel("low");
+  logger->SetLogScreenLevel("info");
+  logger->SetColoredLog(true);
+
+  // System paths
+  const TString workDirectory = getenv("VMCWORKDIR");
+  gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+  gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 
   // Output files
   const TString simufile = "sim.root";
@@ -33,11 +38,6 @@ void runsim_music(int nbevents = 100) {
 
   // Store tracks for visualization
   Bool_t fVis = true;
-
-  // System paths
-  const TString workDirectory = getenv("VMCWORKDIR");
-  gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-  gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 
   // Basic simulation setup
   auto run = std::make_unique<FairRunSim>();
@@ -53,9 +53,13 @@ void runsim_music(int nbevents = 100) {
   auto rtdb = run->GetRuntimeDb();
 
   // Primary particle generator
-  auto ionGen = new FairIonGenerator(82, 208, 82, 1, 0., 0., 1.09, 0., 0., 0.);
+  auto boxGen = new FairBoxGenerator(2212, 8);
+  boxGen->SetXYZ(0, 0, 0.);
+  boxGen->SetThetaRange(7., 145.);
+  boxGen->SetPhiRange(0., 360.);
+  boxGen->SetEkinRange(0.6, 0.6);
   auto primGen = new FairPrimaryGenerator();
-  primGen->AddGenerator(ionGen);
+  primGen->AddGenerator(boxGen);
   run->SetGenerator(primGen);
 
   // Geometry: Cave
@@ -63,20 +67,29 @@ void runsim_music(int nbevents = 100) {
   cave->SetGeometryFileName("r3b_cave.geo");
   run->AddModule(cave);
 
-  // Geometry: Music
-  run->AddModule(new R3BMusic("music_v2023.2.geo.root", {0., 0., 60.}));
+  // Geometry: Califa
+  auto calsim = new R3BCalifa("califa_full.geo.root", {0., 0., 0.});
+  calsim->SelectGeometryVersion(0);
+  run->AddModule(calsim);
+
+  // Digitizer: Califa
+  auto califaDig = new R3BCalifaDigitizer();
+  run->AddTask(califaDig);
+
+  auto califaCal2Cluster = new R3BCalifaCrystalCal2Cluster();
+  califaCal2Cluster->SetCrystalThreshold(0.1); // 100 keV
+  run->AddTask(califaCal2Cluster);
 
   run->SetField(nullptr);
 
-  // Init tasks
+  // Init
   run->Init();
 
-  // Connect runtime parameter file
   auto parFileIO = new FairParRootFileIo(true);
   parFileIO->open(parafile);
   rtdb->setOutput(parFileIO);
 
-  // Run the simulation
+  // Simulate
   run->Run(nbevents);
 
   // Save parameters
@@ -85,6 +98,6 @@ void runsim_music(int nbevents = 100) {
   // Report
   timer.Stop();
   std::cout << "Real time: " << timer.RealTime()
-            << " s, CPU time: " << timer.CpuTime() << " s" << std::endl;
+            << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
   std::cout << "Macro finished successfully." << std::endl;
 }

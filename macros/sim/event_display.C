@@ -11,8 +11,7 @@
  * or submit itself to any jurisdiction.                                      *
  ******************************************************************************/
 
-void event_display() 
-{
+void event_display() {
   // Logger
   auto fLogger = FairLogger::GetLogger();
   fLogger->SetLogVerbosityLevel("low");
@@ -21,13 +20,13 @@ void event_display()
 
   // Open files with FairRunAna
   auto fRun = new FairRunAna();
-  fRun->SetSource(new FairFileSource("music.sim.root"));
+  fRun->SetSource(new FairFileSource("sim.root"));
   fRun->SetSink(new FairRootFileSink("test.root"));
 
   // Load parameters
   auto fRtdb = dynamic_cast<FairRuntimeDb *>(fRun->GetRuntimeDb());
   auto parIo1 = new FairParRootFileIo();
-  parIo1->open("music.par.root");
+  parIo1->open("par.root");
   fRtdb->setFirstInput(parIo1);
   fRtdb->print();
 
