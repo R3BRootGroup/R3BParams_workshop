@@ -16,88 +16,92 @@
 #include <TSystem.h>
 #include <memory>
 
-void runsim_califa(const int nbevents = 100) {
-  // Timer
-  TStopwatch timer;
-  timer.Start();
+void runsim_califa(const int nbevents = 100)
+{
+    // Timer
+    TStopwatch timer;
+    timer.Start();
 
-  // Logging
-  auto logger = FairLogger::GetLogger();
-  logger->SetLogVerbosityLevel("low");
-  logger->SetLogScreenLevel("info");
-  logger->SetColoredLog(true);
+    // Logging
+    auto logger = FairLogger::GetLogger();
+    logger->SetLogVerbosityLevel("low");
+    logger->SetLogScreenLevel("info");
+    logger->SetColoredLog(true);
 
-  // System paths
-  const TString workDirectory = getenv("VMCWORKDIR");
-  gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-  gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
+    // System paths
+    const TString workDirectory = getenv("VMCWORKDIR");
+    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 
-  // Output files
-  const TString simufile = "sim.root";
-  const TString parafile = "par.root";
+    // Output files
+    const TString simufile = "sim.root";
+    const TString parafile = "par.root";
 
-  // Store tracks for visualization
-  Bool_t fVis = true;
+    // Store tracks for visualization
+    Bool_t fVis = true;
 
-  // Basic simulation setup
-  auto run = std::make_unique<FairRunSim>();
-  run->SetName("TGeant4");
-  run->SetStoreTraj(fVis);
-  run->SetMaterials("media_r3b.geo");
+    // Basic simulation setup
+    auto run = std::make_unique<FairRunSim>();
+    run->SetName("TGeant4");
+    run->SetStoreTraj(fVis);
+    run->SetMaterials("media_r3b.geo");
 
-  auto config = std::make_unique<FairGenericVMCConfig>();
-  run->SetSimulationConfig(std::move(config));
-  run->SetSink(std::make_unique<FairRootFileSink>(simufile.Data()));
+    auto config = std::make_unique<FairGenericVMCConfig>();
+    run->SetSimulationConfig(std::move(config));
+    run->SetSink(std::make_unique<FairRootFileSink>(simufile.Data()));
 
-  // Get run time data base
-  auto rtdb = run->GetRuntimeDb();
+    // Get run time data base
+    auto rtdb = run->GetRuntimeDb();
 
-  // Primary particle generator
-  auto boxGen = new FairBoxGenerator(2212, 8);
-  boxGen->SetXYZ(0, 0, 0.);
-  boxGen->SetThetaRange(7., 145.);
-  boxGen->SetPhiRange(0., 360.);
-  boxGen->SetEkinRange(0.6, 0.6);
-  auto primGen = new FairPrimaryGenerator();
-  primGen->AddGenerator(boxGen);
-  run->SetGenerator(primGen);
+    // Primary particle generator
+    auto califaGen = new R3BCALIFATestGenerator(22, 1);
+    califaGen->SetCosTheta();
+    califaGen->SetThetaRange();
+    califaGen->SetPhiRange();
+    califaGen->SetNuclearDecayChain();
+    // califaGen->SetLorentzBoost(0.773); // beta
+    califaGen->SetDecayChainPoint(1.3325, 1.); // E in MeV and branching ratio
+    califaGen->SetDecayChainPoint(1.1732, 1.); // E in MeV and branching ratio
 
-  // Geometry: Cave
-  auto cave = new R3BCave("CAVE");
-  cave->SetGeometryFileName("r3b_cave.geo");
-  run->AddModule(cave);
+    auto primGen = new FairPrimaryGenerator();
+    primGen->AddGenerator(califaGen);
+    run->SetGenerator(primGen);
 
-  // Geometry: Califa
-  auto calsim = new R3BCalifa("califa_full.geo.root", {0., 0., 0.});
-  calsim->SelectGeometryVersion(0);
-  run->AddModule(calsim);
+    // Geometry: Cave
+    auto cave = new R3BCave("CAVE");
+    cave->SetGeometryFileName("r3b_cave.geo");
+    run->AddModule(cave);
 
-  // Digitizer: Califa
-  auto califaDig = new R3BCalifaDigitizer();
-  run->AddTask(califaDig);
+    // Geometry: Califa
+    auto calsim = new R3BCalifa("califa_full.geo.root", { 0., 0., 0. });
+    calsim->SelectGeometryVersion(0);
+    run->AddModule(calsim);
 
-  auto califaCal2Cluster = new R3BCalifaCrystalCal2Cluster();
-  califaCal2Cluster->SetCrystalThreshold(0.1); // 100 keV
-  run->AddTask(califaCal2Cluster);
+    // Digitizer: Califa
+    auto califaDig = new R3BCalifaDigitizer();
+    run->AddTask(califaDig);
 
-  run->SetField(nullptr);
+    auto califaCal2Cluster = new R3BCalifaCrystalCal2Cluster();
+    califaCal2Cluster->SetCrystalThreshold(0.1); // 100 keV
+    run->AddTask(califaCal2Cluster);
 
-  // Init
-  run->Init();
+    run->SetField(nullptr);
 
-  auto parFileIO = new FairParRootFileIo(true);
-  parFileIO->open(parafile);
-  rtdb->setOutput(parFileIO);
+    // Init
+    run->Init();
 
-  // Simulate
-  run->Run(nbevents);
+    auto parFileIO = new FairParRootFileIo(true);
+    parFileIO->open(parafile);
+    rtdb->setOutput(parFileIO);
 
-  // Save parameters
-  rtdb->saveOutput();
+    // Simulate
+    run->Run(nbevents);
 
-  // Report
-  timer.Stop();
-  std::cout << "Real time: " << timer.RealTime()
-            << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
-  std::cout << "Macro finished successfully." << std::endl;
+    // Save parameters
+    rtdb->saveOutput();
+
+    // Report
+    timer.Stop();
+    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    std::cout << "Macro finished successfully." << std::endl;
 }
