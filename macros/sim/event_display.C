@@ -11,30 +11,31 @@
  * or submit itself to any jurisdiction.                                      *
  ******************************************************************************/
 
-void event_display() {
-  // Logger
-  auto fLogger = FairLogger::GetLogger();
-  fLogger->SetLogVerbosityLevel("low");
-  fLogger->SetLogScreenLevel("info");
-  fLogger->SetColoredLog(true);
+void event_display()
+{
+    // Logger
+    auto fLogger = FairLogger::GetLogger();
+    fLogger->SetLogVerbosityLevel("low");
+    fLogger->SetLogScreenLevel("info");
+    fLogger->SetColoredLog(true);
 
-  // Open files with FairRunAna
-  auto fRun = new FairRunAna();
-  fRun->SetSource(new FairFileSource("sim.root"));
-  fRun->SetSink(new FairRootFileSink("test.root"));
+    // Open files with FairRunAna
+    auto fRun = new FairRunAna();
+    fRun->SetSource(new FairFileSource("sim.root"));
+    fRun->SetSink(new FairRootFileSink("test.root"));
 
-  // Load parameters
-  auto fRtdb = dynamic_cast<FairRuntimeDb *>(fRun->GetRuntimeDb());
-  auto parIo1 = new FairParRootFileIo();
-  parIo1->open("par.root");
-  fRtdb->setFirstInput(parIo1);
-  fRtdb->print();
+    // Load parameters
+    auto fRtdb = dynamic_cast<FairRuntimeDb*>(fRun->GetRuntimeDb());
+    auto parIo1 = new FairParRootFileIo();
+    parIo1->open("par.root");
+    fRtdb->setFirstInput(parIo1);
+    fRtdb->print();
 
-  // Create event display
-  auto fMan = new R3BEventManager();
-  auto fTrack = new R3BMCTracks("Monte-Carlo Tracks");
-  fMan->AddTask(fTrack);
+    // Create event display
+    auto fMan = new R3BEventManager();
+    auto fTrack = new R3BMCTracks("Monte-Carlo Tracks");
+    fMan->AddTask(fTrack);
 
-  fMan->Init();
-  gEve->GetDefaultGLViewer()->SetClearColor(0);
+    fMan->Init();
+    gEve->GetDefaultGLViewer()->SetClearColor(0);
 }
